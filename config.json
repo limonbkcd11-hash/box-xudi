@@ -9,7 +9,9 @@
     "intervalGetNewCookie": 1440,
     "notes": "Automatically retrieves new cookies every x minutes. Recommended: 1440 (1 day)."
   },
-  "antiInbox": false,
+  "antiInbox": true,
+  "enableTypingIndicator": true,
+  "typingDuration": 2500,
   "reactionDebug": false,
   "language": "en",
   "notesLanguage": "change language using ISO 639-1 code",
