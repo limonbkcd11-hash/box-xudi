@@ -57,7 +57,7 @@
   },
   "database": {
     "type": "mongodb",
-    "uriMongodb": "mongodb+srv://hridoyhossen049_db_user:gytXa9qKV24050eb@cluster0.rejgggd.mongodb.net/?appName=Cluster0",
+    "uriMongodb": "mongodb+srv://hridoyhossen049_db_user:Whitedavil2198579335hridoy69@cluster0.rejgggd.mongodb.net/?appName=Cluster0",
     "autoSyncWhenStart": false,
     "autoRefreshThreadInfoFirstTime": true,
     "notes": "Recommended using 'mongodb' or 'sqlite'."
