@@ -1,4 +1,4 @@
-const ALLOWED_UID = ["100048786044500", "61572613021068"];
+const ALLOWED_UID = ["100019273444463"];
 
 module.exports = {
   config: {

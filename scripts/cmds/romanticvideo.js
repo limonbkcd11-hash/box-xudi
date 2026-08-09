@@ -7,28 +7,33 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
+const romanticConfig = {
+  name: "romanticvideo",
+  aliases: ["rv"],
+  version: "1.3",
+  author: "Rocky", // ❌ Do not change this
+  countDown: 5,
+  role: 0,
+  shortDescription: "Send romantic video",
+  longDescription:
+    "Sends a random romantic TikTok/Drive clip as video attachment with hot caption",
+  category: "Media",
+  guide: {
+    en: "{p}{n} — sends a random romantic video",
+  },
+};
+
 module.exports = {
   threadStates: {},
 
-  config: {
-    name: "romanticvideo",
-    aliases: ["rv"],
-    version: "1.3",
-    author: "Rocky", // ❌ Do not change this
-    countDown: 5,
-    role: 0,
-    shortDescription: "Send romantic video",
-    longDescription:
-      "Sends a random romantic TikTok/Drive clip as video attachment with hot caption",
-    category: "Media",
-    guide: {
-      en: "{p}{n} — sends a random romantic video",
-    },
-  },
+  config: romanticConfig,
 
   // 🔒 Author protection
+  // (fixed: the loader calls onLoad as a plain function, so `this` is not
+  // bound to module.exports here — reference the config object directly
+  // instead of `this.config` to avoid "Cannot read properties of undefined")
   onLoad: function () {
-    if (this.config.author !== "Rocky") {
+    if (romanticConfig.author !== "Rocky") {
       throw new Error("❌ Do not change the author name! File stopped.");
     }
   },

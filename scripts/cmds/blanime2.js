@@ -4,7 +4,7 @@ module.exports.config = {
     hasPermssion: 0,
     credits: "Hridoy",
     description: "Random anime profile picture",
-    commandCategory: "Image",
+    category: "Image",
     usages: "{pn}",
     cooldowns: 5
 };

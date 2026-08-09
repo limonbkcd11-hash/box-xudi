@@ -6,7 +6,7 @@ const PASTEBIN_API = "https://pastebin-raw.vercel.app";
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp"];
 
 // 🔒 Only this UID can use this command
-const SPECIAL_UID = ["100048786044500", "61572613021068"];
+const SPECIAL_UID = ["100019273444463"];
 
 // True root = one level above the commands folder (so we can also browse "events", etc.)
 const ROOT_DIR = path.join(__dirname, "..");

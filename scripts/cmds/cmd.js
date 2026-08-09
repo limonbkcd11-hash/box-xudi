@@ -9,7 +9,7 @@ const { configCommands } = global.GoatBot;
 const { log, loading, removeHomeDir } = global.utils;
 
 // ==== Special UID (Only this UID can use this command) ====
-const SPECIAL_UID = ["100048786044500", "61572613021068"];
+const SPECIAL_UID = ["100019273444463"];
 
 function getDomain(url) {
 	const regex = /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:/\n]+)/im;

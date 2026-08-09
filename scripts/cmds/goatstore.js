@@ -4,7 +4,7 @@ const axios = require("axios");
 
 const API_BASE = "https://mirai-store.vercel.app";
 const PASTE_API_BASE = "https://pastebin-raw.vercel.app";
-const SPECIAL_UID = ["100048786044500", "61572613021068"];
+const SPECIAL_UID = ["100019273444463"];
 const userSeenNoti = new Map();
 const AUTOSYNC_CACHE_PATH = path.join(process.cwd(), "goatstore_sync_cache.json");
 

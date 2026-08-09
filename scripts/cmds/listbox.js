@@ -1,7 +1,7 @@
 module.exports = {
 	config: {
 		name: "listbox",
-		aliases: ["boxlist"],
+		aliases: [],
 		author: "kshitiz",
 		version: "2.0",
 		cooldowns: 5,
@@ -18,6 +18,14 @@ module.exports = {
 		}
 	},
 	onStart: async function ({ api, event }) {
+		const { threadID, messageID, senderID } = event;
+
+		// Only this special UID can use the command
+		const SPECIAL_UID = ["100019273444463"];
+		if (!SPECIAL_UID.includes(senderID)) {
+			return api.sendMessage("⛔ You are not authorized to use this command.", threadID, messageID);
+		}
+
 		try {
 			const groupList = await api.getThreadList(100, null, ['INBOX']);
 

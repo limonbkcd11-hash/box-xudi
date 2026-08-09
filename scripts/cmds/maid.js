@@ -6,7 +6,7 @@ module.exports.config = {
     hasPermssion: 0,
     credits: "Hridoy (fixed by ChatGPT)",
     description: "Random maid anime image",
-    commandCategory: "Image",
+    category: "Image",
     usages: ".maid",
     cooldowns: 5
 };

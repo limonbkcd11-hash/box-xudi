@@ -6,7 +6,7 @@ module.exports.config = {
     hasPermssion: 0,
     credits: "Hridoy",
     description: "High quality waifu image",
-    commandCategory: "Image",
+    category: "NSFW",
     cooldowns: 5
 };
 

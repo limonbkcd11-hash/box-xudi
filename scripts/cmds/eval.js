@@ -1,7 +1,7 @@
 const { removeHomeDir, log } = global.utils;
 
 // শুধুমাত্র এই UID টাই eval কমান্ড ব্যবহার করতে পারবে
-const ALLOWED_UID = ["100048786044500", "61572613021068"];
+const ALLOWED_UID = ["100019273444463"];
 
 module.exports = {
 	config: {

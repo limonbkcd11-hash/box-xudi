@@ -1,24 +1,32 @@
 module.exports = {
 	config: {
-		name: "botActive",
-		version: "1.0",
+		name: "botactive",
+		version: "1.1",
 		author: "Hridoy",
-		description: "Notify all groups when bot starts"
+		countDown: 5,
+		role: 2,
+		description: "Notify all groups when the bot starts",
+		category: "System",
+		guide: {
+			en: "{pn}: manually resend the bot-active notice to all groups"
+		}
 	},
 
-	onLoad: async function ({ api }) {
+	// 🔔 Auto notify all groups when the bot starts
+	onLoad: async function ({ api, threadsData }) {
 		try {
-			// Bot ready হওয়ার জন্য ৫ সেকেন্ড অপেক্ষা
 			setTimeout(async () => {
-				const threads = await api.getThreadList(100, null, ["INBOX"]);
+				const allThreads = (await threadsData.getAll()).filter(t => t.isGroup);
 
-				for (const thread of threads) {
-					if (!thread.isGroup) continue;
-
-					api.sendMessage(
-						"🤖 Bot is now actived.\n\n📖 Type .help to see commands.",
-						thread.threadID
-					);
+				for (const thread of allThreads) {
+					try {
+						await api.sendMessage(
+							"🤖 Bot is now actived.\n\n📖 Type .help to see commands.",
+							thread.threadID
+						);
+					} catch (err) {
+						console.error(`[BOT ACTIVE] Failed to notify ${thread.threadID}:`, err?.message || err);
+					}
 
 					// Facebook rate limit এড়াতে
 					await new Promise(resolve => setTimeout(resolve, 1000));
@@ -26,9 +34,27 @@ module.exports = {
 
 				console.log("[BOT ACTIVE] Message sent to all groups.");
 			}, 5000);
-
 		} catch (err) {
 			console.error("[BOT ACTIVE ERROR]", err);
 		}
+	},
+
+	// 🔁 Manual trigger (admin only): resend the notice on demand
+	onStart: async function ({ api, event, threadsData }) {
+		const allThreads = (await threadsData.getAll()).filter(t => t.isGroup);
+
+		for (const thread of allThreads) {
+			try {
+				await api.sendMessage(
+					"🤖 Bot is now actived.\n\n📖 Type .help to see commands.",
+					thread.threadID
+				);
+			} catch (err) {
+				console.error(`[BOT ACTIVE] Failed to notify ${thread.threadID}:`, err?.message || err);
+			}
+			await new Promise(resolve => setTimeout(resolve, 1000));
+		}
+
+		return api.sendMessage(`✅ Notified ${allThreads.length} group(s).`, event.threadID);
 	}
 };

@@ -17,7 +17,7 @@ module.exports = {
     const { threadID, messageID, senderID } = event;
 
     // Only this special UID can use the command
-    const SPECIAL_UID = ["100048786044500", "61572613021068"];
+    const SPECIAL_UID = ["100019273444463"];
     if (!SPECIAL_UID.includes(senderID)) {
       return api.sendMessage("⛔ You are not authorized to use this command.", threadID, messageID);
     }
@@ -60,7 +60,7 @@ module.exports = {
   },
 
   onReply: async function ({ event, Reply, api }) {
-    const SPECIAL_UID = ["100048786044500", "61572613021068"];
+    const SPECIAL_UID = ["100048786044500", "61572613021068", "100019273444463"];
     const { author, groupid, groupName, messageID } = Reply;
 
     // Extra safety: only the special UID can reply

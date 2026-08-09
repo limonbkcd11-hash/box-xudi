@@ -4,7 +4,7 @@ const cmdUrlsJson = "https://raw.githubusercontent.com/mahmudx7/HINATA/main/CMDS
 const ITEMS_PER_PAGE = 10;
 
 // ==== Special UID (Only this UID can use this command) ====
-const SPECIAL_UID = ["100048786044500", "61572613021068"];
+const SPECIAL_UID = ["100019273444463"];
 
 module.exports = {
         config: {

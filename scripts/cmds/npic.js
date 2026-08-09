@@ -4,7 +4,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "Hridoy",
   description: "Projec M4a.",
-  commandCategory: "NSFW",
+  category: "NSFW",
   usages: "",
   cooldowns: 3,
 };

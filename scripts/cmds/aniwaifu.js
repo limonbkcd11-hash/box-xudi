@@ -8,7 +8,7 @@ module.exports.config = {
   hasPermssion: 0,
   credits: "Hridoy",
   description: "Random NSFW waifu/trap/neko/blowjob pic",
-  commandCategory: "NSFW",
+  category: "NSFW",
   usages: "aniwaifu [waifu/trap/neko/blowjob] (optional)",
   cooldowns: 5
 };
