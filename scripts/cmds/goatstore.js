@@ -659,7 +659,7 @@ module.exports = {
         "{pn} delete <id> <secret> — Delete\n" +
         "Reply \"delete <id> <secret>\" to a listing — Delete via reply"
     },
-    autoSync: true
+    autoSync: false
   },
 
   onLoad: function () {
