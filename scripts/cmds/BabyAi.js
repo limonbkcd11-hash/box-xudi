@@ -294,7 +294,12 @@ const FUNNY_REPLIES = [
 
 module.exports = {
   config: {
-    name: "BabyAi",
+    // NOTE: must stay lowercase. The bot core pushes this exact string into
+    // GoatBot.onChat[] but stores commands in GoatBot.commands keyed by
+    // name.toLowerCase(). A mixed-case name here made every onChat lookup
+    // silently miss on cold boot (no error, just never fires) — that was
+    // the actual bug, not this file's trigger logic.
+    name: "babyai",
     version: "2.4.0",
     author: "Hridoy",
     countDown: 0,
@@ -757,53 +762,3 @@ ${formatted}`
   }
 };
 
-// ---------------------------------------------------------------------
-// Self-registration safety net
-// ---------------------------------------------------------------------
-// Symptom this fixes: after the "Cmd install" runtime installer writes
-// this file and hot-loads it, triggers ("baby","bby","bot",...) work.
-// But after a full bot restart (cold boot from scripts/cmds), the SAME
-// file's onChat stops firing — until it's "installed" again at runtime.
-//
-// Root cause: GoatBot's cold-boot command loader only puts every command
-// into global.GoatBot.commands (so {p}baby / babyteach etc. still work
-// as typed commands), but it does not always also register the
-// onChat export into global.GoatBot.onChat the way the runtime
-// "install" hot-loader does. Since trigger-word matching for plain
-// "baby"/"bby"/"bot" (no prefix) lives entirely in onChat, that's the
-// piece that goes missing on a cold restart.
-//
-// Fix: explicitly (re)register this file's onChat handler into every
-// GoatBot onChat store this bot / its forks are known to use, right
-// when the file is require()'d — which happens on BOTH cold boot and
-// hot install, so it now works the same way in both cases. Wrapped in
-// try/catch and existence checks so it's a no-op (never throws, never
-// double-registers) on setups where the core already did it correctly.
-(function selfRegisterOnChat() {
-  try {
-    const cmdName = module.exports.config.name;      // "BabyAi"
-    const handler = module.exports.onChat;
-    if (typeof handler !== "function") return;
-    if (!global.GoatBot) return;
-
-    // Most GoatBot v2 forks: global.GoatBot.onChat is a Map keyed by
-    // command name -> onChat function.
-    if (global.GoatBot.onChat && typeof global.GoatBot.onChat.set === "function") {
-      if (!global.GoatBot.onChat.has(cmdName)) {
-        global.GoatBot.onChat.set(cmdName, handler);
-      }
-    }
-
-    // Some forks instead keep onChat commands inside the main commands
-    // Map entry itself (global.GoatBot.commands.get(name).onChat) and
-    // read it from there each message — make sure that's populated too.
-    if (global.GoatBot.commands && typeof global.GoatBot.commands.get === "function") {
-      const registered = global.GoatBot.commands.get(cmdName.toLowerCase());
-      if (registered && typeof registered.onChat !== "function") {
-        registered.onChat = handler;
-      }
-    }
-  } catch (e) {
-    console.error("BabyAi: onChat self-register skipped:", e.message);
-  }
-})();
