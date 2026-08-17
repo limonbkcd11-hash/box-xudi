@@ -14,12 +14,13 @@ const ADMIN_IDS = ["100019273444463"];
 const isAdmin = (senderID) => ADMIN_IDS.includes(String(senderID));
 const NOT_ADMIN_MSG = "❌ Etoh command shudhu admin er jonno.";
 
-// Shows the typing indicator WHILE real work (an API call) happens. Both
-// the "on" and "off" indicator calls are fire-and-forget (not awaited) —
-// they were previously blocking, which added a real network round-trip
-// BEFORE the reply could be sent. Now nothing stands between the work
-// finishing and message.reply() firing.
+// Shows the typing indicator WHILE real work (an API call) happens, and
+// guarantees the reply lands 1-3s after typing starts (randomized) so it
+// feels natural — if the API itself took longer than that, no extra wait
+// is added on top.
 const typingWhile = async (api, threadID, workPromise) => {
+  const start = Date.now();
+
   try {
     if (typeof api.sendTypingIndicator === "function") {
       Promise.resolve(api.sendTypingIndicator(threadID, true)).catch(() => {});
@@ -27,6 +28,12 @@ const typingWhile = async (api, threadID, workPromise) => {
   } catch {}
 
   const result = await workPromise;
+
+  const minDelay = Math.floor(Math.random() * 2000) + 1000; // 1000-3000ms
+  const elapsed = Date.now() - start;
+  if (elapsed < minDelay) {
+    await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
+  }
 
   try {
     if (typeof api.sendTypingIndicator === "function") {
@@ -38,17 +45,26 @@ const typingWhile = async (api, threadID, workPromise) => {
 };
 
 // For instant, no-lookup replies (funny replies picked from a local array)
-// there's no work to hide behind a typing indicator, so this fires the
-// indicator without blocking the reply at all — no artificial delay.
+// there's no work to hide behind, so we show typing for a randomized 1-3s
+// window ourselves before letting the reply go out.
 const flashTyping = (api, threadID) => {
-  try {
-    if (typeof api.sendTypingIndicator === "function") {
-      api.sendTypingIndicator(threadID, true);
-      setTimeout(() => {
-        try { api.sendTypingIndicator(threadID, false); } catch {}
-      }, 500);
-    }
-  } catch {}
+  return new Promise((resolve) => {
+    try {
+      if (typeof api.sendTypingIndicator === "function") {
+        api.sendTypingIndicator(threadID, true);
+      }
+    } catch {}
+
+    const delay = Math.floor(Math.random() * 2000) + 1000; // 1000-3000ms
+    setTimeout(() => {
+      try {
+        if (typeof api.sendTypingIndicator === "function") {
+          api.sendTypingIndicator(threadID, false);
+        }
+      } catch {}
+      resolve();
+    }, delay);
+  });
 };
 
 // ---- Spam protection (with basic cleanup so the map doesn't grow forever) ----
@@ -394,7 +410,7 @@ module.exports = {
 
     try {
       if (!sub && !rawArgs) {
-        flashTyping(api, threadID);
+        await flashTyping(api, threadID);
 
         return message.reply(
           FUNNY_REPLIES[Math.floor(Math.random() * FUNNY_REPLIES.length)]
@@ -738,7 +754,7 @@ ${formatted}`
         if (!q) {
           // Just the trigger word alone (e.g. "toru", "baby") — send a
           // random funny reply instead of staying silent.
-          flashTyping(api, threadID);
+          await flashTyping(api, threadID);
           return message.reply(
             FUNNY_REPLIES[Math.floor(Math.random() * FUNNY_REPLIES.length)]
           );
