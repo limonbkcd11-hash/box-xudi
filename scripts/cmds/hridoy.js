@@ -58,7 +58,7 @@ module.exports = {
 ✨ LOC    ➤ JASHORE
 
 ✦━━━━━━━〔 𝑺𝑶𝑪𝑰𝑨𝑳〕━━━━━━━✦
-🌐 FB   ➤ fb.me/100048786044500
+🌐 FB   ➤ fb.me/DukkhoBilash8276
 📧 MAIL ➤ hridoyhossen049@gmail.com
 📱 WA   ➤ 01744-******
 
