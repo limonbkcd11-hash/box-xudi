@@ -258,7 +258,7 @@ async function getSmartReply(query, threadID) {
 // both cases: the trigger typed completely alone ("toru") and the trigger
 // followed by a message ("toru kemon acho"). This also blocks false
 // matches on unrelated words (e.g. "jan" no longer matches "january").
-const PREFIX_TRIGGERS = [ "toru","toruchan","tori","bot","তরু","বট","jan","জান","বেবি","baby"
+const PREFIX_TRIGGERS = [ "toru","bby","toruchan","tori","bot","তরু","বট","jan","জান","বেবি","baby"
 ];
 
 function matchPrefix(raw) {

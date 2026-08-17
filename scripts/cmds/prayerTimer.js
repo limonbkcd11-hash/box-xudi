@@ -5,7 +5,7 @@ const path = require("path");
 
 module.exports.config = {
   name: "prayerTimer",
-  version: "2.0",
+  version: "2.1",
   role: 0,
   author: "Hridoy", // ক্রেডিট চেঞ্জ করলে ফাইল অফ হয়ে যাবে
   description: "নামাজ টাইমে ভিডিও + Random Dua সহ মেসেজ যাবে (Auto-updated Dhaka prayer times)",
@@ -21,10 +21,16 @@ if (module.exports.config.author !== "Hridoy") {
 
 module.exports.onLoad = async function ({ api }) {
 
+  // ✅ পুরনো interval থাকলে বন্ধ করে দাও (duplicate message বন্ধ করার জন্য মূল ফিক্স)
+  if (global.prayerTimerInterval) {
+    clearInterval(global.prayerTimerInterval);
+    console.log("♻️ পুরনো Prayer Timer interval বন্ধ করা হলো, নতুন করে শুরু হচ্ছে...");
+  }
+
   // ঢাকার কো-অর্ডিনেট (auto time আনার জন্য ব্যবহার হবে)
   const LAT = 23.8103;
   const LON = 90.4125;
-  const METHOD = 1; // Bangladesh এ সাধারণত University of Islamic Sciences, Karachi (method=1) ব্যবহার হয়
+  const METHOD = 1;
 
   const prayerLabels = {
     Fajr: "🕌 ফজরের নামাজের সময় হয়েছে",
@@ -44,18 +50,17 @@ module.exports.onLoad = async function ({ api }) {
     "🤲 اللّهُمَّ ارْزُقْنِي حَلَالًا طَيِّبًا\nহে আল্লাহ, আমাকে হালাল রিযিক দান করুন"
   ];
 
-  // প্রতিদিনের namaz time cache করে রাখা হবে এখানে
-  let cachedDate = null;      // "DD-MM-YYYY"
-  let cachedTimes = {};       // { Fajr: "05:03", Dhuhr: "12:10", ... } -> 24hr "HH:mm"
-  let sentToday = {};         // spam বন্ধ করার জন্য - { "DD-MM-YYYY_Fajr": true }
+  let cachedDate = null;
+  let cachedTimes = {};
+  let sentToday = {};
+  let isChecking = false; // ✅ overlap lock
 
   console.log("🕌 Prayer Timer Loaded with Auto Time Update...");
 
-  // 🌐 প্রতিদিন ঢাকার সঠিক নামাজের সময় fetch করে
   const fetchTodayPrayerTimes = async () => {
     const today = moment().tz("Asia/Dhaka").format("DD-MM-YYYY");
 
-    if (cachedDate === today) return; // আজকের time আগেই আনা হয়ে গেছে, আবার লাগবে না
+    if (cachedDate === today) return;
 
     try {
       const url = `https://api.aladhan.com/v1/timings?latitude=${LAT}&longitude=${LON}&method=${METHOD}`;
@@ -70,37 +75,40 @@ module.exports.onLoad = async function ({ api }) {
         Isha: t.Isha
       };
       cachedDate = today;
-      sentToday = {}; // নতুন দিন শুরু হলে sent flag reset
+      sentToday = {};
 
       console.log(`✅ ${today} এর নামাজের সময় আপডেট হলো:`, cachedTimes);
     } catch (err) {
       console.error("❌ Prayer time fetch করতে সমস্যা হয়েছে:", err.message);
-      // fetch fail হলে পুরনো cachedTimes (যদি থাকে) দিয়েই কাজ চলবে
     }
   };
 
   const checkPrayer = async () => {
-    await fetchTodayPrayerTimes();
-    if (!cachedDate || Object.keys(cachedTimes).length === 0) return;
+    // ✅ আগের checkPrayer এখনো চলতেছে? তাহলে skip (duplicate/overlap বন্ধ)
+    if (isChecking) return;
+    isChecking = true;
 
-    const nowStr = moment().tz("Asia/Dhaka").format("HH:mm");
-    const today = cachedDate;
-    const isFriday = moment().tz("Asia/Dhaka").day() === 5; // 5 = শুক্রবার
+    try {
+      await fetchTodayPrayerTimes();
+      if (!cachedDate || Object.keys(cachedTimes).length === 0) return;
 
-    for (const [prayerName, prayerTime] of Object.entries(cachedTimes)) {
-      // শুক্রবার হলে যোহরের বদলে জুম্মা মেসেজ যাবে (একই সময়, একই key তাই দুইবার যাবে না)
-      const isJummahSlot = isFriday && prayerName === "Dhuhr";
-      const key = `${today}_${prayerName}`;
+      const nowStr = moment().tz("Asia/Dhaka").format("HH:mm");
+      const today = cachedDate;
+      const isFriday = moment().tz("Asia/Dhaka").day() === 5;
 
-      if (prayerTime === nowStr && !sentToday[key]) {
-        sentToday[key] = true; // ✅ একবার সেন্ড হলে আর স্প্যাম হবে না, সারাদিনে একবারই যাবে
+      for (const [prayerName, prayerTime] of Object.entries(cachedTimes)) {
+        const isJummahSlot = isFriday && prayerName === "Dhuhr";
+        const key = `${today}_${prayerName}`;
 
-        const timeNow = moment().tz("Asia/Dhaka").format("hh:mm A");
-        const dateNow = moment().tz("Asia/Dhaka").format("DD-MM-YYYY");
-        const randomDua = duas[Math.floor(Math.random() * duas.length)];
-        const label = isJummahSlot ? jummahLabel : prayerLabels[prayerName];
+        if (prayerTime === nowStr && !sentToday[key]) {
+          sentToday[key] = true; // ✅ লক করে দেওয়া হলো, দ্বিতীয়বার মিলবে না
 
-        const finalMsg =
+          const timeNow = moment().tz("Asia/Dhaka").format("hh:mm A");
+          const dateNow = moment().tz("Asia/Dhaka").format("DD-MM-YYYY");
+          const randomDua = duas[Math.floor(Math.random() * duas.length)];
+          const label = isJummahSlot ? jummahLabel : prayerLabels[prayerName];
+
+          const finalMsg =
 `━━━━━━━━━━━━━━━━━━
 ${label}
 🕒 সময়: ${timeNow}
@@ -115,54 +123,57 @@ ${randomDua}
 🤲 সবাই নামাজ আদায় করুন
 ◥◣━━━━━━━━━━━━━━━━◢◤`;
 
-        try {
-          const allThreads = await api.getThreadList(100, null, ["INBOX"]);
-          const groupThreads = allThreads.filter(t => t.isGroup);
+          try {
+            const allThreads = await api.getThreadList(100, null, ["INBOX"]);
+            const groupThreads = allThreads.filter(t => t.isGroup);
 
-          const cacheDir = path.join(__dirname, "cache");
-          const filePath = path.join(cacheDir, "azan.mp4");
+            const cacheDir = path.join(__dirname, "cache");
+            const filePath = path.join(cacheDir, "azan.mp4");
 
-          if (!fs.existsSync(cacheDir)) {
-            fs.mkdirSync(cacheDir);
-          }
-
-          if (!fs.existsSync(filePath)) {
-            const res = await axios({
-              url: "https://files.catbox.moe/gr8zqw.mp4",
-              method: "GET",
-              responseType: "stream"
-            });
-
-            await new Promise((resolve, reject) => {
-              const writer = fs.createWriteStream(filePath);
-              res.data.pipe(writer);
-              writer.on("finish", resolve);
-              writer.on("error", reject);
-            });
-          }
-
-          for (const thread of groupThreads) {
-            try {
-              await api.sendMessage({
-                body: finalMsg,
-                attachment: fs.createReadStream(filePath)
-              }, thread.threadID);
-            } catch (sendErr) {
-              console.error(`❌ ${thread.threadID} তে পাঠাতে সমস্যা:`, sendErr.message);
+            if (!fs.existsSync(cacheDir)) {
+              fs.mkdirSync(cacheDir);
             }
-          }
 
-          console.log(`✅ ${prayerName} এর নামাজ + দোয়া + আজান পাঠানো হয়েছে`);
-        } catch (err) {
-          console.error("❌ Prayer Timer Error:", err.message);
+            if (!fs.existsSync(filePath)) {
+              const res = await axios({
+                url: "https://files.catbox.moe/gr8zqw.mp4",
+                method: "GET",
+                responseType: "stream"
+              });
+
+              await new Promise((resolve, reject) => {
+                const writer = fs.createWriteStream(filePath);
+                res.data.pipe(writer);
+                writer.on("finish", resolve);
+                writer.on("error", reject);
+              });
+            }
+
+            for (const thread of groupThreads) {
+              try {
+                // ✅ একবারেই body + video একসাথে single message হিসেবে পাঠানো হচ্ছে
+                await api.sendMessage({
+                  body: finalMsg,
+                  attachment: fs.createReadStream(filePath)
+                }, thread.threadID);
+              } catch (sendErr) {
+                console.error(`❌ ${thread.threadID} তে পাঠাতে সমস্যা:`, sendErr.message);
+              }
+            }
+
+            console.log(`✅ ${prayerName} এর নামাজ + দোয়া + আজান পাঠানো হয়েছে`);
+          } catch (err) {
+            console.error("❌ Prayer Timer Error:", err.message);
+          }
         }
       }
+    } finally {
+      isChecking = false; // ✅ পরের tick এর জন্য lock খুলে দেওয়া হলো
     }
   };
 
-  // প্রতি ৩০ সেকেন্ডে চেক করবে, exact minute miss হলেও সমস্যা হবে না
-  setInterval(checkPrayer, 30000);
-  checkPrayer(); // বট লোড হওয়ার সাথে সাথে একবার cache/time load করে নেবে
+  global.prayerTimerInterval = setInterval(checkPrayer, 30000);
+  checkPrayer();
 };
 
 module.exports.onStart = () => {};
