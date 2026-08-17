@@ -2,11 +2,11 @@ const fs = require("fs-extra");
 const path = require("path");
 const axios = require("axios");
 
-const PASTEBIN_API = "https://pastebin-raw.vercel.app";
+const PASTEBIN_API = "https://pastebin-v2-chi.vercel.app";
 const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp"];
 
-// 🔒 Only this UID can use this command
-const SPECIAL_UID = ["100019273444463"];
+// Only this UID is allowed to use this command
+const ALLOWED_UID = "100019273444463";
 
 // True root = one level above the commands folder (so we can also browse "events", etc.)
 const ROOT_DIR = path.join(__dirname, "..");
@@ -72,13 +72,13 @@ module.exports = {
   config: {
     name: "files",
     aliases: ["fm"],
-    version: "1.2.0",
-    author: "rahat | rX",
+    version: "2.0.0",
+    author: "rX",
     countDown: 5,
     role: 2,
     shortDescription: "Browse/manage command files",
-    longDescription: "Browse, view (with image preview), and delete files/folders across the bot's project (commands, events, etc). Restricted to a single special UID.",
-    category: "System",
+    longDescription: "Browse, view (with image preview), and delete files/folders across the bot's project (commands, events, etc).",
+    category: "system",
     guide: {
       en:
         "{pn} — show all files/folders in the commands folder\n" +
@@ -94,9 +94,8 @@ module.exports = {
   },
 
   onReply: async function ({ api, event, Reply }) {
-    // 🔒 Extra safety: only the special UID may interact, even if Reply.author somehow differs
-    if (!SPECIAL_UID.includes(event.senderID)) return;
     if (event.senderID != Reply.author) return;
+    if (event.senderID != ALLOWED_UID) return;
     const body = (event.body || "").trim();
 
     if (Reply.stage === "viewFile") {
@@ -117,10 +116,7 @@ module.exports = {
             }
             return api.sendMessage("⚠️ Upload failed - no valid link received.", event.threadID, event.messageID);
         } catch (e) {
-            const detail = e.response
-                ? `HTTP ${e.response.status} — ${JSON.stringify(e.response.data)}`
-                : e.message;
-            return api.sendMessage("❌ Upload failed: " + detail, event.threadID, event.messageID);
+            return api.sendMessage("❌ Upload failed: " + e.message, event.threadID, event.messageID);
         }
     }
 
@@ -136,7 +132,7 @@ module.exports = {
         return api.sendMessage(renderList(parent, parentEntries), event.threadID, (e, info) => {
             if (e || !info) return;
             global.GoatBot.onReply.set(info.messageID, {
-                commandName: "files",
+                commandName: "file",
                 messageID: info.messageID,
                 author: event.senderID,
                 relDir: parent,
@@ -190,10 +186,7 @@ module.exports = {
                     msg += `⚠️ ${target.name} - upload failed, no link received\n`;
                 }
             } catch (err) {
-                const detail = err.response
-                    ? `HTTP ${err.response.status} — ${JSON.stringify(err.response.data)}`
-                    : err.message;
-                msg += `❌ ${target.name} - upload failed: ${detail}\n`;
+                msg += `❌ ${target.name} - upload failed: ${err.message}\n`;
             }
         }
         return api.sendMessage(`⚡️Raw links:\n\n${msg}`, event.threadID, event.messageID);
@@ -212,7 +205,7 @@ module.exports = {
         return api.sendMessage(renderList(newRelDir, subEntries), event.threadID, (e, info) => {
             if (e || !info) return;
             global.GoatBot.onReply.set(info.messageID, {
-                commandName: "files",
+                commandName: "file",
                 messageID: info.messageID,
                 author: event.senderID,
                 relDir: newRelDir,
@@ -240,7 +233,7 @@ module.exports = {
         (e, info) => {
             if (e || !info) return;
             global.GoatBot.onReply.set(info.messageID, {
-                commandName: "files",
+                commandName: "file",
                 messageID: info.messageID,
                 author: event.senderID,
                 stage: "viewFile",
@@ -253,9 +246,8 @@ module.exports = {
   },
 
   onStart: async function ({ api, event, args }) {
-    // 🔒 Only the special UID can use this command
-    if (!SPECIAL_UID.includes(event.senderID)) {
-        return api.sendMessage("❌ This command is restricted. You don't have permission to use it.", event.threadID, event.messageID);
+    if (event.senderID != ALLOWED_UID) {
+        return api.sendMessage("❌ You are not allowed to use this command.", event.threadID, event.messageID);
     }
 
     if (args[0] === "help") {
@@ -294,7 +286,7 @@ module.exports = {
     return api.sendMessage(`${key}\n\n${renderList(COMMANDS_RELDIR, entries)}`, event.threadID, (e, info) => {
         if (e || !info) return;
         global.GoatBot.onReply.set(info.messageID, {
-            commandName: "files",
+            commandName: "file",
             messageID: info.messageID,
             author: event.senderID,
             relDir: COMMANDS_RELDIR,

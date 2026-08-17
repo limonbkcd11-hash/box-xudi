@@ -178,6 +178,7 @@ module.exports = {
     aliases: ["autoteach"],
     version: "3.0.0",
     author: "HR ID OY",
+    category: "System",
     countDown: 3,
     role: 1,
 
