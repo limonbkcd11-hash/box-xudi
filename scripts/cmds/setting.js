@@ -160,7 +160,7 @@ module.exports = {
             "⚙️ Bot Config",
             "━━━━━━━━━━━━━━━━━",
             `1. Admin Only — ${status(config.adminOnly?.enable)}`,
-            `2. Auto Restart — ${status(config.autoRestart?.enable)}`,
+            `2. Auto Restart — ${config.autoRestart?.time ? `ON (cron: ${config.autoRestart.time})` : "OFF"}`,
             `3. Anti Inbox — ${status(config.antiInbox)}`,
             `4. Only Admin Box — ${status(config.onlyAdminBox)}`,
             "━━━━━━━━━━━━━━━━━",
@@ -298,7 +298,7 @@ module.exports = {
     // ══════════════════════════════════════════════════════════════
     if (state === "botConfig") {
       if (num === 1) { config.adminOnly = config.adminOnly || {}; config.adminOnly.enable = !config.adminOnly.enable; }
-      else if (num === 2) { config.autoRestart = config.autoRestart || {}; config.autoRestart.enable = !config.autoRestart.enable; }
+      else if (num === 2) { return message.reply("ℹ️ Auto Restart isn't a toggle — it always runs on the cron schedule set in config.json (\"autoRestart\":{\"time\":...}). Edit that time value directly, or remove the whole autoRestart block, to change it."); }
       else if (num === 3) { config.antiInbox = !config.antiInbox; }
       else if (num === 4) { config.onlyAdminBox = !config.onlyAdminBox; }
       else return message.reply("𝗫 Invalid selection.");
