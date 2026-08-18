@@ -9,13 +9,13 @@
     "intervalGetNewCookie": 1440,
     "notes": "Automatically retrieves new cookies every x minutes. Recommended: 1440 (1 day)."
   },
-  "antiInbox": true,
+  "antiInbox": false,
   "enableTypingIndicator": true,
   "typingDuration": 2500,
   "reactionDebug": false,
   "language": "en",
   "notesLanguage": "change language using ISO 639-1 code",
-  "nickNameBot": " ✦ 𝙏𝙊𝙍𝙐 𝘾𝙃𝘼𝙉 ✦",
+  "nickNameBot": " \u2726 \ud835\ude4f\ud835\ude4a\ud835\ude4d\ud835\ude50 \ud835\ude3e\ud835\ude43\ud835\ude3c\ud835\ude49 \u2726",
   "prefix": ".",
   "adminOnly": {
     "enable": false,
@@ -32,8 +32,8 @@
     "enable": true,
     "onlyAdmin": true,
     "emojis": [
-      "😡",
-      "🤬"
+      "\ud83d\ude21",
+      "\ud83e\udd2c"
     ],
     "notes": "If enable = true, bot will unsend any message reacted with these emojis. If onlyAdmin = true, only adminBot IDs can trigger it."
   },
@@ -56,7 +56,7 @@
     "autoRefreshThreadInfoFirstTime": true,
     "notes": "Recommended using 'mongodb' or 'sqlite'."
   },
-   "timeZone": "Asia/Dhaka",
+  "timeZone": "Asia/Dhaka",
   "credentials": {
     "gmailAccount": {
       "email": "botofnexxo@gmail.com",
@@ -64,8 +64,8 @@
       "clientSecret": "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",
       "refreshToken": " ",
       "apiKey": ""
-   },
-     "gRecaptcha": {
+    },
+    "gRecaptcha": {
       "siteKey": "6LfU0TUrAAAAAJVy_tm-q9xlEIEeyBK4N8VwuGdZ",
       "secretKey": "6LfU0TUrAAAAAOR_CE7oZV-8Eo83LsJmb12-lWFb"
     }
@@ -152,7 +152,7 @@
     "typ": false,
     "presence": false
   },
-    "optionsFca": {
+  "optionsFca": {
     "forceLogin": true,
     "listenEvents": true,
     "updatePresence": true,
