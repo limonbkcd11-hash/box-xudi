@@ -161,7 +161,7 @@ module.exports = {
             "━━━━━━━━━━━━━━━━━",
             `1. Admin Only — ${status(config.adminOnly?.enable)}`,
             `2. Auto Restart — ${status(config.autoRestart?.enable)}`,
-            `3. Anti Inbox — ${status(config.antiInbox?.enable)}`,
+            `3. Anti Inbox — ${status(config.antiInbox)}`,
             `4. Only Admin Box — ${status(config.onlyAdminBox)}`,
             "━━━━━━━━━━━━━━━━━",
             "› Reply 1-4 to toggle",
